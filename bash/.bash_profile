@@ -33,6 +33,7 @@ alias py="python3"
 alias notepad="nvim ~/Documents/notes/tmp.txt"
 alias todo="nvim ~/Documents/notes/TODO.md"
 alias journal="nvim ~/Documents/notes/journal.txt"
+alias claude="claude --model opus"
 
 #---------------
 # Tools
