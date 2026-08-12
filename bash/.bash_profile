@@ -33,7 +33,6 @@ alias py="python3"
 alias notepad="nvim ~/Documents/notes/tmp.txt"
 alias todo="nvim ~/Documents/notes/TODO.md"
 alias journal="nvim ~/Documents/notes/journal.txt"
-alias claude="claude --model opus"
 
 #---------------
 # Tools
@@ -48,5 +47,12 @@ alias claude="claude --model opus"
 #---------------
 
 # Load this machine's private/local login config (PATH, env, tool init).
-# Provided by this machine's private dotfiles repo; absent on a fresh machine.
-[ -r ~/.bash_profile.local ] && source ~/.bash_profile.local
+# Provided by this machine's private dotfiles repos (e.g. dotfiles-pattern,
+# dotfiles-karefirst); absent on a fresh machine. Multiple repos can each
+# contribute a ~/.bash_profile.<repo>.local file and all get sourced.
+for local_bash_profile in ~/.bash_profile.*.local; do
+  [ -r "$local_bash_profile" ] && source "$local_bash_profile"
+done
+unset local_bash_profile
+
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
