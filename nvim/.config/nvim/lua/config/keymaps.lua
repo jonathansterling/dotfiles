@@ -74,6 +74,18 @@ vim.keymap.set('n', '<leader>h', function()
 	end
 end, { noremap = true, silent = false, desc = "Toggle Diagnostics" })
 
+-- 'Space + b' toggles ':Git blame'
+vim.keymap.set('n', '<leader>b', function()
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		local buf = vim.api.nvim_win_get_buf(win)
+		if vim.bo[buf].filetype == "fugitiveblame" then
+			vim.api.nvim_win_close(win, false)
+			return
+		end
+	end
+	vim.cmd("Git blame")
+end, { noremap = true, silent = true, desc = "Toggle Git Blame" })
+
 -- nvim-test
 vim.keymap.set('n', '<leader>t', ':TestNearest<CR>', { desc = "Test Nearest" })
 vim.keymap.set('n', '<leader>T', ':TestFile<CR>', { desc = "Test File" })
