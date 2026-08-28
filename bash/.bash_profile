@@ -5,7 +5,7 @@
 [[ -s ~/.bashrc ]] && source ~/.bashrc
 
 # Prompt
-PS1='[\[\e[38;5;46m\]$(get_truncated_git_branch)\[\e[0m\]] \w > '
+PS1='[$(git_prompt_segment)] $(__prompt_path) > '
 
 #---------------
 # Environment
