@@ -65,11 +65,11 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>', { desc = "Clear Search Highl
 
 -- 'Space + h' toggles diagnostics
 vim.keymap.set('n', '<leader>h', function()
-	if vim.diagnostic.is_disabled() then
+	if not vim.diagnostic.is_enabled() then
 		vim.diagnostic.enable()
 		print("Diagnostics enabled")
 	else
-		vim.diagnostic.disable()
+		vim.diagnostic.enable(false)
 		print("Diagnostics disabled")
 	end
 end, { noremap = true, silent = false, desc = "Toggle Diagnostics" })
@@ -85,6 +85,50 @@ vim.keymap.set('n', '<leader>b', function()
 	end
 	vim.cmd("Git blame")
 end, { noremap = true, silent = true, desc = "Toggle Git Blame" })
+
+-- 'Space + Shift + b' opens the GitHub PR(s) associated with the commit that last touched the current line
+vim.keymap.set('n', '<leader>B', function()
+	local file_dir = vim.fn.expand('%:p:h')
+	local file_name = vim.fn.expand('%:t')
+	if file_name == "" then
+		vim.notify("No file in current buffer", vim.log.levels.WARN)
+		return
+	end
+
+	local line = vim.fn.line('.')
+	local blame = vim.system(
+		{ 'git', 'blame', '-L', line .. ',' .. line, '--porcelain', '--', file_name },
+		{ cwd = file_dir, text = true }
+	):wait()
+	if blame.code ~= 0 then
+		vim.notify("git blame failed: " .. (blame.stderr or ""), vim.log.levels.ERROR)
+		return
+	end
+
+	local sha = blame.stdout:match("^(%x+)")
+	if not sha or sha:match("^0+$") then
+		vim.notify("This line has not been committed yet", vim.log.levels.WARN)
+		return
+	end
+
+	vim.notify("Looking up PR for " .. sha:sub(1, 8) .. "...")
+	local pulls = vim.system(
+		{ 'gh', 'api', 'repos/{owner}/{repo}/commits/' .. sha .. '/pulls', '--jq', '.[0].html_url' },
+		{ cwd = file_dir, text = true }
+	):wait()
+	if pulls.code ~= 0 then
+		vim.notify("gh api failed: " .. (pulls.stderr or ""), vim.log.levels.ERROR)
+		return
+	end
+
+	local url = vim.trim(pulls.stdout or "")
+	if url == "" then
+		vim.notify("No PR found for commit " .. sha:sub(1, 8), vim.log.levels.WARN)
+		return
+	end
+
+	vim.ui.open(url)
+end, { noremap = true, silent = true, desc = "Open GitHub PR For Line" })
 
 -- nvim-test
 vim.keymap.set('n', '<leader>t', ':TestNearest<CR>', { desc = "Test Nearest" })
